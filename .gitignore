@@ -1,0 +1,6 @@
+*.pyc
+
+# setup builds
+build/
+dist/
+oscar_vehicle_api.egg-info/
