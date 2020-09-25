@@ -873,7 +873,7 @@ class OscarTurnSignalsCmdDataV2(OscarCmdData):
     def __init__(self,  *args, **kwargs):
         super(OscarTurnSignalsCmdDataV2, self).__init__(*args, **kwargs)
 
-        self._set_can_id(LAUNCHER_CMD_V2)
+        self._set_can_id(TURN_SIGNALS_CMD_V2)
         self._can_type  = OscarData.CAN_TYPE_CMD
         self._can_state = OscarData.CAN_STATE_WORK_AND_ACTIVE
 
@@ -1119,8 +1119,8 @@ class OscarSteeringWheelPoseVelocityInfoDataV2(OscarInfoData):
     def get_steering_wheel_angle_and_velocity(self):
 
         with self._can_data_lock:
-            sw_angle_h, sw_angle_l = self._can_data[0], self._can_data[1]
-            sw_velocity_h, sw_velocity_l = self._can_data[4], self._can_data[5]
+            sw_angle_h, sw_angle_l = self._can_data[0]  & 0x0F, self._can_data[1]
+            sw_velocity_h, sw_velocity_l = self._can_data[4] & 0x0F, self._can_data[5]
 
         return (1.5 * twos_complement((sw_angle_h << 8) + sw_angle_l, 12),
                 twos_complement((sw_velocity_h << 8) + sw_velocity_l, 12))

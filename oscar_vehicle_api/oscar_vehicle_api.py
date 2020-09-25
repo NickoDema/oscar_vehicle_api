@@ -35,7 +35,7 @@ OSCAR_DEFAULT_LOG_RATE = 50
 OSCAR_DEFAULT_LOG_DIR  = "/tmp/oscar_vehicle_api_logs"
 
 
-class OscarVehicle():
+class OscarVehicle(object):
 
     UNKNOWN                   = oscar_protocol.UNKNOWN
     VEHICLE_AUTO_MODE         = oscar_protocol.VEHICLE_AUTO_MODE
