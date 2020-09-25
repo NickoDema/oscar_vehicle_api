@@ -31,6 +31,8 @@ import log
 
 OSCAR_DEFAULT_CONTROL_RATE = 50
 OSCAR_DEFAULT_ODOMETRY_CALC_RATE = 50
+OSCAR_DEFAULT_LOG_RATE = 50
+OSCAR_DEFAULT_LOG_DIR  = "/tmp/oscar_vehicle_api_logs"
 
 
 class OscarVehicle():
@@ -72,8 +74,12 @@ class OscarVehicle():
         self._api_vehicle_mode = self.UNKNOWN
         self._vehicle_mode_check_spinner = Spinner(target = self._check_vehicle_mode,
                                                      rate = 1)
+        self._vehicle_log = None
+        self._vehicle_log_dir = OSCAR_DEFAULT_LOG_DIR
+        self._vehicle_log_spinner = Spinner(target = self._log_vehicle_state,
+                                              rate = OSCAR_DEFAULT_LOG_RATE)
 
-        self.start_odometry_calculation()
+        # self.start_odometry_calculation()
 
 
     def set_interface(self, interface):
@@ -128,7 +134,7 @@ class OscarVehicle():
 
         # CALL CONTROL CALC STEP HERE
         throttle, sw_torque = 0, 0
-        
+
         self._vehicle_protocol.set_vehicle_throttle(throttle)
         self._vehicle_protocol.set_steering_wheel_torque(sw_torque)
 
@@ -336,6 +342,39 @@ class OscarVehicle():
         return 'NO_ERROR'
 
 
+    def _log_vehicle_state(self):
+        cur_time = time.time()
+
+        mode = self.get_mode()
+
+        vehicle_speed         = self._vehicle_protocol.get_vehicle_speed()
+        sw_angle, sw_velocity = self._vehicle_protocol.get_steering_wheel_angle_and_velocity()
+        sw_torque, eps_torque = self._vehicle_protocol.get_steering_wheel_and_eps_torques()
+
+        self._vehicle_log.add_data(cur_time,
+                                   sw_angle,
+                                   sw_velocity,
+                                   sw_torque,
+                                   eps_torque,
+                                   vehicle_speed,
+                                   mode)
+
+
+    def start_vehicle_logger(self):
+        self._vehicle_log = log.VehicleLog(self._vehicle_log_dir)
+        self._vehicle_log_spinner.start()
+
+
+    def change_vehicle_logger_dir(self, log_dir):
+        self._vehicle_log_dir = log_dir
+
+
+    def stop_vehicle_logger(self):
+        self._vehicle_log_spinner.stop()
+        self._vehicle_log.save()
+        self._vehicle_log = None
+
+
 class LexusRX450H(OscarVehicle):
 
     def __init__(self,  *args, **kwargs):
@@ -354,6 +393,8 @@ class LexusRX450H(OscarVehicle):
 class Odometry():
 
     def __init__(self, vehicle):
+
+        self._vehicle = vehicle
 
         self.wheel_radius   = vehicle.vehicle_params["wheel_radius"]
         self.wheel_width    = vehicle.vehicle_params["wheel_width"]
@@ -389,8 +430,8 @@ class Odometry():
     def calc_odometry(self):
 
         cur_time = time.time()
-        cur_vehicle_velocity          = self._vehicle_protocol.get_vehicle_speed()
-        cur_sw_angle, cur_sw_velocity = self._vehicle_protocol.get_steering_wheel_angle_and_velocity()
+        cur_vehicle_velocity          = self._vehicle.get_vehicle_speed()
+        cur_sw_angle, cur_sw_velocity = self._vehicle.get_steering_wheel_angle_and_velocity()
 
         with self._pose_data_lock:
 

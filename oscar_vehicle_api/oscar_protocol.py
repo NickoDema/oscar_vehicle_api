@@ -393,7 +393,7 @@ class OscarProtocol():
 
 
     def get_vehicle_speed(self):
-        self.vehicle_speed_info.get_vehicle_speed()
+        return self.vehicle_speed_info.get_vehicle_speed()
 
 
     def get_vehicle_wheels_speed(self):
@@ -751,9 +751,9 @@ class OscarVehicleMoveCmdDataV2(OscarCmdData):
 
     def throttle(self, throttle):
         if throttle > 0:
-            throttle = int(min(throttle,  self.MAX_THROTTLE))
+            throttle = int(min(throttle * 10,  self.MAX_THROTTLE))
         else:
-            throttle = int(max(throttle, -self.MAX_THROTTLE)) & 0xFFFF
+            throttle = int(max(throttle * 10, -self.MAX_THROTTLE)) & 0xFFFF
 
         self._can_data[1] = throttle & 0x00FF
         self._can_data[2] = throttle >> 8
