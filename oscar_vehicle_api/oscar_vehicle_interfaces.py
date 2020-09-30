@@ -39,15 +39,15 @@ def create_interface_by_name(interface, protocol):
         try:
             return OscarSerialVehicleInterface(interface, protocol)
         except Exception as e:
-            log.warning(str(e) + "\n")
+            log.print_err("[OSCAR]: " + str(e))
             return None
 
     elif(interface == '' or interface is None):
-        log.warning("Communication interface was not specified!")
+        log.print_warn("[OSCAR] : Communication interface was not specified!")
         return None
 
     else:
-        log.warning("Communication interface type of " + str(interface) + " is not supported!")
+        log.print_err("[OSCAR]: Communication interface type of " + str(interface) + " is not supported!")
         return None
 
 

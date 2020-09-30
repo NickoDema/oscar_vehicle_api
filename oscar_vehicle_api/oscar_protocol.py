@@ -597,6 +597,9 @@ class OscarData(object):
         if self._protocol._configure_received_infos_rate(self, rate):
             self._receive_rate = rate
 
+    def get_receive_rate(self):
+        return self._real_receive_rate
+
 
     def get_last_receive_time(self):
         return self._last_receive_time

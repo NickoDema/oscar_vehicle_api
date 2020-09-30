@@ -459,21 +459,22 @@ def create_vehicle_by_model(vehicle_model      = None,
                             odometry_loop_rate = OSCAR_DEFAULT_ODOMETRY_CALC_RATE):
 
     if(vehicle_model == '' or vehicle_model is None):
-        log.warning("Vehicle model was not specified!")
+        log.print_warn("Vehicle model was not specified!")
         return None
 
     elif (vehicle_model in supported_vehicle_models):
         try:
-            return OscarVehicle(interface,
-                                protocol_config,
-                                controller,
-                                controller_params,
-                                control_loop_rate,
-                                odometry_loop_rate)
+            vehicle = supported_vehicle_models[vehicle_model](interface,
+                                                              protocol_config,
+                                                              controller,
+                                                              controller_params,
+                                                              control_loop_rate,
+                                                              odometry_loop_rate)
+            return vehicle
         except Exception as e:
-            log.warning(str(e) + "\n")
+            log.print_err("[OSCAR]: " + str(e) + "\n")
             return None
 
     else:
-        log.warning("Vehicle model " + str(interface) + " is not supported!")
+        log.print_warn("Vehicle model " + str(interface) + " is not supported!")
         return None

@@ -17,15 +17,25 @@
 ###############################################################################
 
 import os, sys, time
-from logging import basicConfig, warning
 
 import json, uuid
 from collections import OrderedDict as odict
 
-basicConfig(format='%(levelname)s:%(message)s')
 
 def error(error_msg):
     sys.exit(error_msg)
+
+
+def print_ok(str):
+    print('\x1b[1;32m' + str + '\x1b[0m')
+
+
+def print_err(str):
+    print('\x1b[1;31;40m' + str + '\x1b[0m')
+
+
+def print_warn(str):
+    print('\x1b[1;33;40m' + str + '\x1b[0m')
 
 
 class NoIndent(object):
@@ -95,8 +105,8 @@ class VehicleLog():
         try:
             file_handler = open(file_path, 'w')
         except Exception as err:
-            print("Can't open file " + str(file_path))
-            print(err)
+            log.print_err("[OSCAR]: Can't open file " + str(file_path))
+            log.print_err(err)
             return None
 
         return file_handler

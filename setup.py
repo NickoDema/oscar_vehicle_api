@@ -24,7 +24,7 @@ with open('requirements.txt') as file_with_requirements:
 
 setuptools.setup(
     name="oscar_vehicle_api",
-    version="1.0a4",
+    version="1.0b2",
     author="Nikolay Dema",
     author_email="ndema2301@gmail.com",
     description="OSCAR Vehicle API",
