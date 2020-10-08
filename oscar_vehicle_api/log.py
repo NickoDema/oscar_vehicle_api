@@ -22,20 +22,20 @@ import json, uuid
 from collections import OrderedDict as odict
 
 
-def error(error_msg):
-    sys.exit(error_msg)
+def error(msg):
+    sys.exit(msg)
 
 
-def print_ok(str):
-    print('\x1b[1;32m' + str + '\x1b[0m')
+def print_ok(msg):
+    print('\x1b[1;32m' + msg + '\x1b[0m')
 
 
-def print_err(str):
-    print('\x1b[1;31;40m' + str + '\x1b[0m')
+def print_err(msg):
+    print('\x1b[1;31;40m' + msg + '\x1b[0m')
 
 
-def print_warn(str):
-    print('\x1b[1;33;40m' + str + '\x1b[0m')
+def print_warn(msg):
+    print('\x1b[1;33;40m' + msg + '\x1b[0m')
 
 
 class NoIndent(object):

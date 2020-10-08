@@ -74,6 +74,7 @@ def create_raw_slp_from_raw_oscar_data(raw_data):
 
 
 def get_slp_data_from_raw_slp(raw):
+    #check here for can bus id!!!!
     if ((len(raw) == RAW_SLP_LEN) and (raw[0:SLP_HEADER_LEN] == RECEIVE_SLP_HEADER)):
         return bytearray([raw[SLP_HEADER_LEN+3]]) + \
                bytearray([raw[SLP_HEADER_LEN+2]]) + \
