@@ -33,13 +33,13 @@ def available_controllers():
     return controllers
 
 
-def create_controller_by_name(name, vehicle, params = None):
-
-    controllers = available_controllers()
-    if name in controllers:
-        return controllers[name](vehicle, params)
-    else:
-        log.warning("There is no " + str(interface) + " controller!")
+def create_controller_by_name(controller, vehicle, params = None):
+    if controller:
+        controllers = available_controllers()
+        if controller in controllers:
+            return controllers[controller](vehicle, params)
+        else:
+            log.print_warn("There is no " + str(controller) + " controller!")
 
     return None
 

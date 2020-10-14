@@ -142,7 +142,7 @@ class OscarProtocol():
 
         if not config:
             config = OscarProtocolConfig()
-            log.warning("Default OSCAR Protocol configuration (OSCAR_CAN_V2)")
+            log.print_warn("Default OSCAR Protocol configuration (OSCAR_CAN_V2)")
 
         if config.version == OSCAR_CAN_V2:
 

@@ -19,7 +19,7 @@
 import threading
 import time
 
-from math import cos, sin, tan
+from math import cos, sin, tan, pi
 
 import oscar_protocol
 from loops import Spinner
@@ -431,6 +431,7 @@ class Odometry():
         cur_time = time.time()
         cur_vehicle_velocity          = self._vehicle.get_vehicle_speed()
         cur_sw_angle, cur_sw_velocity = self._vehicle.get_steering_wheel_angle_and_velocity()
+        cur_vehicle_steering_angle = (cur_sw_angle * pi / 180) / self.steering_ratio
 
         with self._pose_data_lock:
 
@@ -438,7 +439,7 @@ class Odometry():
 
             self.dx = cos(self.yaw) * cur_vehicle_velocity
             self.dy = sin(self.yaw) * cur_vehicle_velocity
-            self.dyaw = cur_vehicle_velocity / self.wheelbase * tan(cur_sw_angle / self.steering_ratio)
+            self.dyaw = cur_vehicle_velocity / self.wheelbase * tan(cur_vehicle_steering_angle)
 
             self.x += dt * self.dx
             self.y += dt * self.dy
