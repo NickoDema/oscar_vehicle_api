@@ -63,7 +63,7 @@ class OscarVehicle(object):
                                "max_acceleration":         2.0,
                                "max_deceleration":         6.0}
 
-        self._controller = create_controller_by_name(controller, controller_params)
+        self._controller = create_controller_by_name(controller, self, controller_params)
         self._control_spinner = Spinner(target = self._calc_control,
                                           rate = control_loop_rate)
 
@@ -79,7 +79,7 @@ class OscarVehicle(object):
         self._vehicle_log_spinner = Spinner(target = self._log_vehicle_state,
                                               rate = OSCAR_DEFAULT_LOG_RATE)
 
-        # self.start_odometry_calculation()
+        self.start_odometry_calculation()
 
 
     def set_interface(self, interface):
@@ -90,6 +90,8 @@ class OscarVehicle(object):
         self._vehicle_interface = interface.create(interface)
         self._start_interface_communication()
 
+
+    ### CONTROL IFACE ##########################################################
 
     def start_controller(self):
         if (self._controller and (not self._control_spinner.is_active())):
@@ -128,12 +130,8 @@ class OscarVehicle(object):
 
     def _calc_control(self):
 
-        cur_vehicle_velocity          = self._vehicle_protocol.get_vehicle_speed()
-        cur_sw_angle, cur_sw_velocity = self._vehicle_protocol.get_steering_wheel_angle_and_velocity()
-        cur_sw_torque, cur_eps_torque = self._vehicle_protocol.get_steering_wheel_and_eps_torques()
-
         # CALL CONTROL CALC STEP HERE
-        throttle, sw_torque = 0, 0
+        throttle, sw_torque = self._controller.calc_output()
 
         self._vehicle_protocol.set_vehicle_throttle(throttle)
         self._vehicle_protocol.set_steering_wheel_torque(sw_torque)
@@ -141,15 +139,15 @@ class OscarVehicle(object):
 
     def set_speed(self, speed = None, acceleration = None, jerk = None):
         if self._controller:
-            self._controller.set_target_speed(speed = speed,
+            self._controller.set_target_speed(speed        = speed,
                                               acceleration = acceleration,
-                                              jerk = jerk)
+                                              jerk         = jerk)
 
 
-    def set_steering(self, steering_angle = None, steering_angle_velocity = None):
+    def set_steering(self, steering_wheel_angle = None, steering_wheel_velocity = None):
         if self._controller:
-            self._controller.set_target_steering(steering_angle = steering_angle,
-                                                 steering_angle_velocity = steering_angle_velocity)
+            self._controller.set_target_steering(steering_wheel_angle    = steering_wheel_angle,
+                                                 steering_wheel_velocity = steering_wheel_velocity)
 
 
     def set_vehicle_throttle(self, throttle):
@@ -159,6 +157,7 @@ class OscarVehicle(object):
     def set_steering_wheel_torque(self, steering_wheel_torque):
         self._vehicle_protocol.set_steering_wheel_torque(steering_wheel_torque)
 
+    ############################################################################
 
     def start_odometry_calculation(self):
         if self._odometry_spinner.is_active():

@@ -20,6 +20,8 @@ import inspect
 import sys
 import log
 import threading
+import time
+from math import cos, sin, tan, copysign
 
 def available_controllers():
 
@@ -31,48 +33,35 @@ def available_controllers():
     return controllers
 
 
-def create_controller_by_name(name, params = None):
+def create_controller_by_name(name, vehicle, params = None):
 
-    if name:
-        controllers = available_controllers()
-        if name in controllers:
-            return controllers[name](params)
-        else:
-            log.warning("There is no " + str(interface) + " controller!")
+    controllers = available_controllers()
+    if name in controllers:
+        return controllers[name](vehicle, params)
+    else:
+        log.warning("There is no " + str(interface) + " controller!")
 
     return None
 
 
 class BaseController(object):
 
-    def __init__(self, params = None):
+    def __init__(self, vehicle, params = None):
         self._params = {}
 
-        self.state_lock = threading.Lock()
+        self._vehicle = vehicle
+
+        self._state_lock = threading.Lock()
 
         self._target_vehicle_speed        = None
         self._target_vehicle_acceleration = None
         self._target_vehicle_jerk         = None
 
-        self._target_steering_angle          = None
-        self._target_steering_angle_velocity = None
-
-        self._current_vehicle_speed        = None
-        self._current_vehicle_acceleration = None
-        self._current_vehicle_jerk         = None
-
-        self._current_vehicle_speed_receive_time        = 0.0
-        self._current_vehicle_acceleration_receive_time = 0.0
-        self._current_vehicle_jerk_receive_time         = 0.0
-
-        self._current_steering_angle          = None
-        self._current_steering_angle_velocity = None
-
-        self._current_steering_angle_receive_time           = 0.0
-        self._current_steering_angle_velocity_receive_time  = 0.0
+        self._target_steering_wheel_angle    = None
+        self._target_steering_wheel_velocity = None
 
         self._output_vehicle_throttle = None
-        self._output_steering_torque      = None
+        self._output_steering_torque  = None
 
 
     def update_params(self, params):
@@ -87,50 +76,77 @@ class BaseController(object):
         pass
 
 
-    def set_current_vehicle_speed(self, vehicle_speed, receive_time = None):
-        self._current_vehicle_speed = vehicle_speed
-        if receive_time:
-            self._current_vehicle_speed_receive_time = receive_time
-
-
-    def set_current_vehicle_acceleration(self, vehicle_acceleration, receive_time = None):
-        self._current_vehicle_acceleration = vehicle_acceleration
-        if receive_time:
-            self._current_vehicle_acceleration_receive_time = receive_time
-
-
-    def set_current_steering_wheel_angle(self, steering_wheel_angle, receive_time = None):
-        self._current_steering_angle = steering_angle
-        if receive_time:
-            self._current_steering_angle_receive_time = receive_time
-
-
-    def set_current_steering_wheel_velocity(self, steering_wheel_velocity, receive_time = None):
-        self._current_steering_angle_velocity = steering_angle_velocity
-        if receive_time:
-            self._current_steering_angle_velocity_receive_time = receive_time
-
-
     def set_target_speed(self, speed = None, acceleration = None, jerk = None):
         self._target_vehicle_speed        = speed
         self._target_vehicle_acceleration = acceleration
         self._target_vehicle_jerk         = jerk
 
 
-    def set_target_steering(self, steering_angle = None, steering_angle_velocity = None):
-        self._target_steering_angle          = steering_angle
-        self._target_steering_angle_velocity = steering_angle_velocity
+    def set_target_steering(self, steering_wheel_angle = None, steering_wheel_velocity = None):
+        self._target_steering_wheel_angle    = steering_wheel_angle
+        self._target_steering_wheel_velocity = steering_wheel_velocity
 
 
     def calc_output():
-        return self._output_vehicle_throttle, self._output_steering_torque
+        return self._output_vehicle_throttle, self._output_steering_wheel_torque
 
 
-class Test(BaseController):
+class PID_with_I_saturation(BaseController):
+
+    MAX_DELAY_IN_CONTROL_LOOP = 0.05
 
     def __init__(self,  *args, **kwargs):
         super(BaseController, self).__init__(*args, **kwargs)
 
-        self._params = {"P": 0.1,
-                        "I": 0.1,
-                        "D": 0.01}
+        self._last_steering_wheel_angle_error = 0.0
+        self._last_control_time = 0.0
+
+        self._integrator = 0.0
+
+        self._params = {"steering_wheel_P": 0.1,
+                        "steering_wheel_I": 0.1,
+                        "steering_wheel_I_saturation": 80,
+                        "steering_wheel_D": 0.01,
+                        "vehicle_speed_P":  0.5}
+
+    def reset():
+        self._last_steering_wheel_angle_error = 0.0
+        self._last_control_time = 0.0
+        self._integrator = 0.0
+
+
+    def calc_output():
+
+        cur_time = time.time()
+        dtime = cur_time - self._last_control_time
+
+        # acceleration and throttle are the same for this controller
+        if self._target_vehicle_acceleration < 0:
+            self._output_vehicle_throttle = max(self._target_vehicle_acceleration, -100)
+        else:
+            self._output_vehicle_throttle = min(self._target_vehicle_acceleration,  100)
+
+        if (dtime > self.MAX_DELAY_IN_CONTROL_LOOP):
+            return self._output_vehicle_throttle, 0
+
+        # steering wheel control part
+        cur_vehicle_speed = self._vehicle.get_vehicle_speed()
+        cur_steering_wheel_angle, cur_steering_wheel_velocity = self._vehicle.get_steering_wheel_angle_and_velocity()
+
+        steering_wheel_angle_error = self._target_steering_wheel_angle - cur_steering_wheel_angle
+
+        p_term = steering_wheel_angle_error * self._params['steering_wheel_P']
+
+        integrator = self._integrator + steering_wheel_angle_error * dtime * self._params['steering_wheel_I']
+        if abs(integrator) <  self._params['steering_wheel_I_saturation']:
+            self._integrator = integrator
+
+        dsteering_wheel_angle_error = self._last_steering_wheel_angle_error - steering_wheel_angle_error
+        d_term = (dsteering_wheel_angle_error / dtime) * self._params['steering_wheel_D']
+
+        self._output_steering_wheel_torque = p_term + self._integrator + d_term
+
+        self._last_steering_wheel_angle_error = steering_wheel_angle_error
+        self._last_control_time = cur_time
+
+        return self._output_vehicle_throttle, self._output_steering_wheel_torque
