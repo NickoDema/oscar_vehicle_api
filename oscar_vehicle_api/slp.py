@@ -18,6 +18,7 @@ RAW_SLP_LEN = 26
 SLP_HEADER_LEN  = 8
 RECEIVE_SLP_HEADER = bytearray.fromhex('AAFF0110001000C1')
 SEND_SLP_HEADER    = bytearray.fromhex('AA01FF100010001C')
+MAIN_SLP_BUS       = 0x1
 
 
 # x^8 + x^2 + x^1 + x^0
@@ -74,7 +75,7 @@ def create_raw_slp_from_raw_oscar_data(raw_data):
 
 
 def get_slp_data_from_raw_slp(raw):
-    if ((len(raw) == RAW_SLP_LEN) and (raw[9] == 1) and (raw[0:SLP_HEADER_LEN] == RECEIVE_SLP_HEADER)):
+    if ((len(raw) == RAW_SLP_LEN) and (raw[0:SLP_HEADER_LEN] == RECEIVE_SLP_HEADER) and (raw[9] == MAIN_SLP_BUS)):
         return bytearray([raw[SLP_HEADER_LEN+3]]) + \
                bytearray([raw[SLP_HEADER_LEN+2]]) + \
                raw[SLP_HEADER_LEN+8:-2]
