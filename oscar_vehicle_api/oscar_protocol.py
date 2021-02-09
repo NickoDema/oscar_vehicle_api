@@ -36,6 +36,8 @@ HAND_BRAKE_CMD_V2            = 0x7FC
 INFO_CONFIGURATION_CMD_V2    = 0x7FD
 TURN_SIGNALS_CMD_V2          = 0x778
 
+VEHICLE_BRAKE_TESTS_CMD_V2  = 0x77A
+
 # Infos CAN identifiers
 STEERING_WHEEL_POSE_VELOCITY_INFO_V2  = 0x25
 STEERING_WHEEL_EPS_TORQUE_INFO_V2     = 0x260
@@ -74,12 +76,16 @@ class OscarProtocolConfig():
         self.vehicle_move_cmd_send_rate                        = 60.0
         self.emergency_stop_cmd_rate                           = 30.0
 
+        self.vehicle_brake_tests_cmd_send_rate                 = 60.0
+
         self.launcher_info_rate                     = 2.0
         self.emergency_stop_info_rate               = 2.0
         self.hand_brake_info_rate                   = 2.0
 
         self.vehicle_moving_interception_info_rate  = 2.0
         self.steerin_wheel_interception_info_rate   = 2.0
+
+        self.vehicle_brake_tests_interception_info_rate  = 2.0
 
         self.vehicle_speed_info_rate                = 80.0
 
@@ -153,6 +159,9 @@ class OscarProtocol():
             self.vehicle_move_cmd                = OscarVehicleMoveCmdDataV2(self)
             self.vehicle_move_interception_cmd   = OscarVehicleMoveCmdDataV2(self)
 
+            self.vehicle_brake_test_cmd                = OscarVehicleTestBrakeCmdDataV2(self)
+            self.vehicle_brake_test_interception_cmd   = OscarVehicleTestBrakeCmdDataV2(self)
+
             self.info_configuration_cmd          = OscarInfoConfigurationCmdDataV2(self)
 
             self.launcher_cmd                    = OscarLauncherCmdDataV2(self)
@@ -179,6 +188,8 @@ class OscarProtocol():
         self.steering_wheel_torque_cmd.set_send_rate(config.steering_wheel_torque_cmd_send_rate)
         self.vehicle_move_cmd.set_send_rate(config.vehicle_move_cmd_send_rate)
         self.emergency_stop_cmd.set_send_rate(config.emergency_stop_cmd_rate)
+
+        self.vehicle_brake_test_cmd.set_send_rate(config.vehicle_brake_tests_cmd_send_rate)
 
         # All infos setting up
         if config.vehicle_speed_info_need_to_receive:
@@ -390,6 +401,22 @@ class OscarProtocol():
 
     def set_vehicle_throttle(self, throttle):
         self.vehicle_move_cmd.throttle(throttle)
+
+    # BRAKE TESTS
+    def vehicle_brake_test_interception_on(self):
+        self.vehicle_brake_test_interception_cmd.interception_on()
+        self.vehicle_brake_test_cmd.start_sending()
+        return True
+
+
+    def vehicle_brake_test_interception_off(self):
+        self.vehicle_brake_test_interception_cmd.interception_off()
+        self.vehicle_brake_test_cmd.stop_sending()
+        return True
+
+
+    def set_vehicle_brake(self, brake):
+        self.vehicle_brake_test_cmd.brake(brake)
 
 
     def get_vehicle_speed(self):
@@ -715,16 +742,10 @@ class OscarSteeringWheelTorqueCmdDataV2(OscarCmdData):
 
 
 class OscarVehicleMoveCmdDataV2(OscarCmdData):
-    """
-    Steering Wheel Control by Torque Command data type
-    """
 
     DONT_CHANGE      = 0x00
     INTERCEPTION_ON  = 0x01
     INTERCEPTION_OFF = 0x02
-
-    LEFT_DIRECTION  = 0x02
-    RIGHT_DIRECTION = 0x01
 
     MAX_THROTTLE = 1000
 
@@ -760,6 +781,48 @@ class OscarVehicleMoveCmdDataV2(OscarCmdData):
 
         self._can_data[1] = throttle & 0x00FF
         self._can_data[2] = throttle >> 8
+
+
+class OscarVehicleTestBrakeCmdDataV2(OscarCmdData):
+
+    DONT_CHANGE      = 0x00
+    INTERCEPTION_ON  = 0x01
+    INTERCEPTION_OFF = 0x02
+
+    MAX_BRAKE= 1000
+
+    def __init__(self,  *args, **kwargs):
+        super(OscarVehicleTestBrakeCmdDataV2, self).__init__(*args, **kwargs)
+
+        self._set_can_id(VEHICLE_BRAKE_TESTS_CMD_V2)
+        self._can_type  = OscarData.CAN_TYPE_CMD
+        self._can_state = OscarData.CAN_STATE_WORK_AND_ACTIVE
+
+
+    def _set_interception(self, interception):
+        self._can_data[0] = interception
+
+
+    def interception_on(self):
+        self._reset_can_data()
+        self._set_interception(self.INTERCEPTION_ON)
+        self.send_once()
+
+
+    def interception_off(self):
+        self._reset_can_data()
+        self._set_interception(self.INTERCEPTION_OFF)
+        self.send_once()
+
+
+    def brake(self, brake):
+        if brake > 0:
+            brake = int(min(brake * 10,  self.MAX_BRAKE))
+        else:
+            brake = int(0)
+
+        self._can_data[1] = brake & 0x00FF
+        self._can_data[2] = brake >> 8
 
 
 class OscarLauncherCmdDataV2(OscarCmdData):

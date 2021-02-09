@@ -154,6 +154,10 @@ class OscarVehicle(object):
         self._vehicle_protocol.set_vehicle_throttle(throttle)
 
 
+    def set_vehicle_brake(self, brake):
+        self._vehicle_protocol.set_vehicle_brake(brake)
+
+
     def set_steering_wheel_torque(self, steering_wheel_torque):
         self._vehicle_protocol.set_steering_wheel_torque(steering_wheel_torque)
 
@@ -215,6 +219,16 @@ class OscarVehicle(object):
             if not self._vehicle_protocol.manual_mode():
                 return False
 
+        return True
+
+
+    def test_brake_on(self):
+        self._vehicle_protocol.vehicle_brake_test_interception_on():
+        return True
+
+
+    def test_brake_off(self):
+        self._vehicle_protocol.vehicle_brake_test_interception_off():
         return True
 
 
