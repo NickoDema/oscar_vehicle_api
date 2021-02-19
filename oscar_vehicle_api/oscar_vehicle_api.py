@@ -154,6 +154,10 @@ class OscarVehicle(object):
         self._vehicle_protocol.set_vehicle_throttle(throttle)
 
 
+    def set_vehicle_test_throttle(self, throttle):
+        self._vehicle_protocol.set_vehicle_throttle_test(throttle)
+
+
     def set_vehicle_brake(self, brake):
         self._vehicle_protocol.set_vehicle_brake(brake)
 
@@ -223,12 +227,22 @@ class OscarVehicle(object):
 
 
     def test_brake_on(self):
-        self._vehicle_protocol.vehicle_brake_test_interception_on():
+        self._vehicle_protocol.vehicle_brake_test_interception_on()
         return True
 
 
     def test_brake_off(self):
-        self._vehicle_protocol.vehicle_brake_test_interception_off():
+        self._vehicle_protocol.vehicle_brake_test_interception_off()
+        return True
+
+
+    def test_throttle_on(self):
+        self._vehicle_protocol.vehicle_throttle_test_interception_on()
+        return True
+
+
+    def test_throttle_off(self):
+        self._vehicle_protocol.vehicle_throttle_test_interception_off()
         return True
 
 
