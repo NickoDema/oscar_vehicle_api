@@ -154,6 +154,14 @@ class OscarVehicle(object):
         self._vehicle_protocol.set_vehicle_throttle(throttle)
 
 
+    def set_vehicle_forward_move(self):
+        self._vehicle_protocol.set_vehicle_forward_move()
+
+        
+    def set_vehicle_backward_move(self):
+        self._vehicle_protocol.set_vehicle_backward_move()
+
+
     def set_vehicle_test_throttle(self, throttle):
         self._vehicle_protocol.set_vehicle_throttle_test(throttle)
 
