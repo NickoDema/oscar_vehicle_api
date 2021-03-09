@@ -231,9 +231,9 @@ class OscarProtocol():
 
     def _register_to_send_list(self, data):
         with self._send_list_lock:
-            if data._send_type == self.SEND_ONCE:
-                data = self._copy_data(data)
-                data._identifier = self._get_identifier()
+            # if data._send_type == self.SEND_ONCE:
+            #     data = self._copy_data(data)
+            #     data._identifier = self._get_identifier()
             self._send_list.update({data._identifier: data})
 
 
@@ -738,21 +738,32 @@ class OscarSteeringWheelTorqueCmdDataV2(OscarCmdData):
         self._can_type  = OscarData.CAN_TYPE_CMD
         self._can_state = OscarData.CAN_STATE_WORK_AND_ACTIVE
 
+    # THIS IS ONLY BECAUSE THE OSCAR_CAN_V2 HAS PUBLISHED AND CONFIRMABLE COMMAND
+    # TYPES IN ONE RAW CAN FRAME! NEED TO BE REMOVED FOR OSCAR_CAN_V3.
+    def send_once(self):
+        self._protocol._register_to_send_list(self)
+
 
     def _set_interception(self, interception):
         self._can_data[0] = interception
 
 
     def interception_on(self):
-        self._reset_can_data()
-        self._set_interception(self.INTERCEPTION_ON)
-        self.send_once()
+        tmp_data = self._copy_data(self)
+        tmp_data._reset_can_data()
+        tmp_data._identifier = self._get_identifier()
+        tmp_data._send_type = self._protocol.SEND_ONCE
+        tmp_data._set_interception(self.INTERCEPTION_ON)
+        tmp_data.send_once()
 
 
     def interception_off(self):
-        self._reset_can_data()
-        self._set_interception(self.INTERCEPTION_OFF)
-        self.send_once()
+        tmp_data = self._copy_data(self)
+        tmp_data._reset_can_data()
+        tmp_data._identifier = self._get_identifier()
+        tmp_data._send_type = self._protocol.SEND_ONCE
+        tmp_data._set_interception(self.INTERCEPTION_OFF)
+        tmp_data.send_once()
 
 
     def _set_direction(self, direction):
@@ -794,20 +805,30 @@ class OscarVehicleMoveCmdDataV2(OscarCmdData):
         self._can_state = OscarData.CAN_STATE_WORK_AND_ACTIVE
 
 
+    def send_once(self):
+        self._protocol._register_to_send_list(self)
+
+
     def _set_interception(self, interception):
         self._can_data[0] = interception
 
 
     def interception_on(self):
-        self._reset_can_data()
-        self._set_interception(self.INTERCEPTION_ON)
-        self.send_once()
+        tmp_data = self._copy_data(self)
+        tmp_data._reset_can_data()
+        tmp_data._identifier = self._get_identifier()
+        tmp_data._send_type = self._protocol.SEND_ONCE
+        tmp_data._set_interception(self.INTERCEPTION_ON)
+        tmp_data.send_once()
 
 
     def interception_off(self):
-        self._reset_can_data()
-        self._set_interception(self.INTERCEPTION_OFF)
-        self.send_once()
+        tmp_data = self._copy_data(self)
+        tmp_data._reset_can_data()
+        tmp_data._identifier = self._get_identifier()
+        tmp_data._send_type = self._protocol.SEND_ONCE
+        tmp_data._set_interception(self.INTERCEPTION_OFF)
+        tmp_data.send_once()
 
 
     def _set_direction(self, direction):
@@ -848,20 +869,30 @@ class OscarVehicleTestBrakeCmdDataV2(OscarCmdData):
         self._can_state = OscarData.CAN_STATE_WORK_AND_ACTIVE
 
 
+    def send_once(self):
+        self._protocol._register_to_send_list(self)
+
+
     def _set_interception(self, interception):
         self._can_data[0] = interception
 
 
     def interception_on(self):
-        self._reset_can_data()
-        self._set_interception(self.INTERCEPTION_ON)
-        self.send_once()
+        tmp_data = self._copy_data(self)
+        tmp_data._reset_can_data()
+        tmp_data._identifier = self._get_identifier()
+        tmp_data._send_type = self._protocol.SEND_ONCE
+        tmp_data._set_interception(self.INTERCEPTION_ON)
+        tmp_data.send_once()
 
 
     def interception_off(self):
-        self._reset_can_data()
-        self._set_interception(self.INTERCEPTION_OFF)
-        self.send_once()
+        tmp_data = self._copy_data(self)
+        tmp_data._reset_can_data()
+        tmp_data._identifier = self._get_identifier()
+        tmp_data._send_type = self._protocol.SEND_ONCE
+        tmp_data._set_interception(self.INTERCEPTION_OFF)
+        tmp_data.send_once()
 
 
     def brake(self, brake):
@@ -893,20 +924,30 @@ class OscarVehicleTestThrottleCmdDataV2(OscarCmdData):
         self._can_state = OscarData.CAN_STATE_WORK_AND_ACTIVE
 
 
+    def send_once(self):
+        self._protocol._register_to_send_list(self)
+
+
     def _set_interception(self, interception):
         self._can_data[0] = interception
 
 
     def interception_on(self):
-        self._reset_can_data()
-        self._set_interception(self.INTERCEPTION_ON)
-        self.send_once()
+        tmp_data = self._copy_data(self)
+        tmp_data._reset_can_data()
+        tmp_data._identifier = self._get_identifier()
+        tmp_data._send_type = self._protocol.SEND_ONCE
+        tmp_data._set_interception(self.INTERCEPTION_ON)
+        tmp_data.send_once()
 
 
     def interception_off(self):
-        self._reset_can_data()
-        self._set_interception(self.INTERCEPTION_OFF)
-        self.send_once()
+        tmp_data = self._copy_data(self)
+        tmp_data._reset_can_data()
+        tmp_data._identifier = self._get_identifier()
+        tmp_data._send_type = self._protocol.SEND_ONCE
+        tmp_data._set_interception(self.INTERCEPTION_OFF)
+        tmp_data.send_once()
 
 
     def throttle(self, throttle):
