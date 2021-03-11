@@ -411,6 +411,11 @@ class OscarProtocol():
         return True
 
 
+    def set_vehicle_cruise_move(self):
+        self.vehicle_move_cmd.cruise_move()
+        return True
+
+
     def set_vehicle_backward_move(self):
         self.vehicle_move_cmd.reverse_move()
         return True
@@ -792,8 +797,9 @@ class OscarVehicleMoveCmdDataV2(OscarCmdData):
     INTERCEPTION_ON  = 0x01
     INTERCEPTION_OFF = 0x02
 
-    FORWARD = 0x01
+    CRUISE  = 0x01
     REVERSE = 0x02
+    FORWARD = 0x03
 
     MAX_THROTTLE = 1000
 
@@ -837,6 +843,10 @@ class OscarVehicleMoveCmdDataV2(OscarCmdData):
 
     def forward_move(self):
         self._set_direction(self.FORWARD)
+
+
+    def cruise_move(self):
+        self._set_direction(self.CRUISE)
 
 
     def reverse_move(self):

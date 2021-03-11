@@ -157,7 +157,11 @@ class OscarVehicle(object):
     def set_vehicle_forward_move(self):
         self._vehicle_protocol.set_vehicle_forward_move()
 
-        
+
+    def set_vehicle_cruise_move(self):
+        self._vehicle_protocol.set_vehicle_cruise_move()
+
+
     def set_vehicle_backward_move(self):
         self._vehicle_protocol.set_vehicle_backward_move()
 
